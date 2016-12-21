@@ -15,6 +15,11 @@
         </style>
     </head>
     <body>
+        <div>
+             <p  style="align-text: center;"> Tervetuloa Tänne :) </p>
+             <input type="text" name="name" value="" placeholder="Saisinko Nickisi">
+             <button type="button" name="namebutton"> Nick
+        </div>
         <ul id="messages"></ul>
         <form action="">
             <input id="m" autocomplete="off" /><button>Lähetä</button>
@@ -22,6 +27,9 @@
         <script src ="/socket.io/socket.io.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
+            function setUsername(){
+                socket.emit('setUsername', document.getElementById('name').value);
+            };
             var socket = io();
             $('form').submit(function(){
                 socket.emit('chat message', $('#m').val());
@@ -31,6 +39,10 @@
             socket.on('chat message', function(msg){
                 $('#messages').append($('<li>').text(msg));
             });
+            socket.on('broadcast', function(data){
+                $('#messages').append($('<li>').text(data.description));
+            });
+
         </script>
     </body>
 </html>
