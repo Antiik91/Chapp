@@ -7,7 +7,6 @@ app.get('/', function(req, res){
 });
 
 var clients = [];
-//var client;
 io.on('connection', function(socket) {
     console.log('a user is connected');
     socket.on('setUsername', function(data){
@@ -25,8 +24,8 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function(data){
         var u =  clients.indexOf(data);
         clients.splice(u, 1);
-        console.log( u +' user disconnected');
-        io.sockets.emit('broadcast', {description: data + '  Lähti kanavalta'});
+        console.log(' user disconnected');
+        io.sockets.emit('broadcast', {description: 'Käyttäjä lähti kanavalta'});
     });
     socket.on('chat message', function(user, data){
         io.sockets.emit('broadcast', {description: user +": "+ data});
