@@ -49,9 +49,6 @@
                 $('#m').val('');
                 return false;
             });
-            socket.on('chat message', function(data){
-                $('#messages').append($('<li>').text(data.description));
-            });
             socket.on('broadcast', function(data){
                 $('#messages').append($('<li>').text(data.description));
             });

@@ -18,17 +18,19 @@ io.on('connection', function(socket) {
        else {
            clients.push(data);
            socket.emit('setUser', {username: data});
-   //        console.log(data +' Vapaana');
+//           console.log(data +' Vapaana');
            io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
        }
     });
     socket.on('disconnect', function(data){
-        console.log('user disconnected');
+        var u =  clients.indexOf(data);
+        clients.splice(u, 1);
+        console.log( u +' user disconnected');
         io.sockets.emit('broadcast', {description: data + '  Lähti kanavalta'});
     });
     socket.on('chat message', function(user, data){
         io.sockets.emit('broadcast', {description: user +": "+ data});
-   //     console.log('viesti ' + user + " "+ data);
+//        console.log('viesti ' + user + " "+ data);
     });
 });
 
