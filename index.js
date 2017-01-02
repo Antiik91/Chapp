@@ -13,12 +13,12 @@ io.on('connection', function(socket) {
     socket.on('setUsername', function(data){
        if(clients.indexOf(data) > -1) {
            socket.emit('userTaken', data + ' Valitettavasti on jo varattu');
-           console.log(data +' varattu');
+//           console.log(data +' varattu');
        }
        else {
            clients.push(data);
            socket.emit('setUser', {username: data});
-           console.log(data +' Vapaana');
+   //        console.log(data +' Vapaana');
            io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
        }
     });
@@ -26,9 +26,9 @@ io.on('connection', function(socket) {
         console.log('user disconnected');
         io.sockets.emit('broadcast', {description: data + '  Lähti kanavalta'});
     });
-    socket.on('chat message', function(data){
-        io.sockets.emit('broadcast', {description: data});
-        console.log('viesti ' + data);
+    socket.on('chat message', function(user, data){
+        io.sockets.emit('broadcast', {description: user +": "+ data});
+   //     console.log('viesti ' + user + " "+ data);
     });
 });
 
