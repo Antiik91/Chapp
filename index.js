@@ -7,27 +7,28 @@ app.get('/', function(req, res){
 });
 
 var clients = [];
+//var client;
 io.on('connection', function(socket) {
-    ;
     console.log('a user is connected');
-    socket.on("setUsername", function(data){
+    socket.on('setUsername', function(data){
        if(clients.indexOf(data) > -1) {
-           clients.push(data);
-           socket.emit('userSet', {username: data});
+           socket.emit('userTaken', data + ' Valitettavasti on jo varattu');
+//           console.log(data +' varattu');
        }
        else {
-           socket.emit('userExists', data + 'Valitettavasti käyttäjänimi on jo varattu :()')
+           clients.push(data);
+           socket.emit('setUser', {username: data});
+   //        console.log(data +' Vapaana');
+           io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
        }
     });
-    io.sockets.emit('broadcast', {description: ' user joined in channel'});
-
-    socket.on('disconnect', function(){
+    socket.on('disconnect', function(data){
         console.log('user disconnected');
-        io.sockets.emit('broadcast', {description: ' user left from channel'});
+        io.sockets.emit('broadcast', {description: data + '  Lähti kanavalta'});
     });
-    socket.on('chat message', function(msg){
-        io.emit('chat message', msg);
-        console.log('viesti ' + msg);
+    socket.on('chat message', function(user, data){
+        io.sockets.emit('broadcast', {description: user +": "+ data});
+   //     console.log('viesti ' + user + " "+ data);
     });
 });
 

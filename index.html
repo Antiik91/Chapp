@@ -15,34 +15,46 @@
         </style>
     </head>
     <body>
-        <div>
+        <div id="username-taken"></div>
+        <div id="newUser">
              <p  style="align-text: center;"> Tervetuloa Tänne :) </p>
-             <input type="text" name="name" value="" placeholder="Saisinko Nickisi">
-             <button type="button" name="namebutton"> Nick
+             <input id="name" type="text" name="name" value="" placeholder="Saisinko Nickisi">
+             <button type="button" name="namebutton" onclick="setUsername()"> Nick </button>
         </div>
+        <div id="msgs" style="visibility: hidden;">
         <ul id="messages"></ul>
-        <form action="">
-            <input id="m" autocomplete="off" /><button>Lähetä</button>
-        </form>
+            <form action="">
+                <input id="m" autocomplete="off" /><button>Lähetä</button>
+            </form>
+        </div>
         <script src ="/socket.io/socket.io.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
+            var socket = io();
+            var user;
             function setUsername(){
                 socket.emit('setUsername', document.getElementById('name').value);
             };
-            var socket = io();
+
+            socket.on('userTaken', function(data){
+                document.getElementById('username-taken').innerHTML = data;
+            });
+            socket.on('setUser', function(data){
+                user = document.getElementById('name').value;
+                document.getElementById('newUser').style.visibility = 'hidden';
+                document.getElementById('msgs').style.visibility = 'visible';
+            });
             $('form').submit(function(){
-                socket.emit('chat message', $('#m').val());
+                socket.emit('chat message', user, $('#m').val());
                 $('#m').val('');
                 return false;
             });
-            socket.on('chat message', function(msg){
-                $('#messages').append($('<li>').text(msg));
+            socket.on('chat message', function(data){
+                $('#messages').append($('<li>').text(data.description));
             });
             socket.on('broadcast', function(data){
                 $('#messages').append($('<li>').text(data.description));
             });
-
         </script>
     </body>
 </html>
