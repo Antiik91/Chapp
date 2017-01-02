@@ -16,7 +16,7 @@
     </head>
     <body>
         <div id="username-taken"></div>
-        <div>
+        <div id="newUser">
              <p  style="align-text: center;"> Tervetuloa Tänne :) </p>
              <input id="name" type="text" name="name" value="" placeholder="Saisinko Nickisi">
              <button type="button" name="namebutton" onclick="setUsername()"> Nick </button>
@@ -38,9 +38,10 @@
             });
             socket.on('setUser', function(){
                 user = data.username;
+                document.getElementById('newUser').style.visibility='hidden';
             })
             $('form').submit(function(){
-                socket.emit('chat message',  msg: $('#m').val());
+                socket.emit('broadcast',  msg: $('#m').val());
                 $('#m').val('');
                 return false;
             });

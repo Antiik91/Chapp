@@ -7,25 +7,21 @@ app.get('/', function(req, res){
 });
 
 var clients = [];
-var client;
+//var client;
 io.on('connection', function(socket) {
-
     console.log('a user is connected');
     socket.on('setUsername', function(data){
        if(clients.indexOf(data) > -1) {
-           socket.emit('userTaken', data + ' Valitettavasti on jo varattu')
+           socket.emit('userTaken', data + ' Valitettavasti on jo varattu');
            console.log(data +' varattu');
        }
        else {
-           client = data;
            clients.push(data);
            socket.emit('setUser', {username: data});
-           console.log(data +' Ei varattu');
-          io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
+           console.log(data +' Vapaana');
+           io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
        }
     });
-
-
     socket.on('disconnect', function(data){
         console.log('user disconnected');
         io.sockets.emit('broadcast', {description: data + '  Lähti kanavalta'});
