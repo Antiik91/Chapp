@@ -17,8 +17,8 @@
     <body>
         <div id="username-taken"></div>
         <div id="channels" style="visibility: hidden;">
-            <button type="button" name="main" onclick="joinChannel(main)"> Main ch </button>
-            <button type="button" name="offtopic" onclick="joinChannel(offtopic)"> offtopic ch </button>
+            <button id="main" type="button" name="main" onclick="joinChannel(document.getElementById('main').name)"> Main ch </button>
+            <button id="offtopic" type="button" name="offtopic" onclick="joinChannel(document.getElementById('offtopic').name)"> offtopic ch </button>
         </div>
         <div id="newUser">
              <p  style="align-text: center;"> Tervetuloa Tänne :) </p>
@@ -36,12 +36,19 @@
         <script>
             var socket = io.connect('http://localhost:3000');
             var user;
+            var currChannel;
             function setUsername(){
                 socket.emit('setUsername', document.getElementById('name').value);
             };
             function joinChannel(channel){
+                if(currChannel) {
+                    socket.emit('leave', curChannel,function(){
+                        console.log('Moikka moi, lähti kanavalta joo.. currcahnnel oli null');
+                    });
+                }
                 socket.emit('join', channel, function(){
                     appendMessage(user + ' liittyi kanavalle');
+                    currChannel = channel;
                 });
 
             }
@@ -55,7 +62,7 @@
                 document.getElementById('channels').style.visibility = 'visible';
             });
             $('form').submit(function(){
-                socket.emit('chat message', user, $('#m').val());
+                socket.emit('chat message', user, currChannel, $('#m').val());
                 $('#m').val('');
                 return false;
             });

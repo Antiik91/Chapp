@@ -9,6 +9,7 @@ app.get('/', function(req, res){
 var clients = [];
 io.sockets.on('connection', function(socket) {
     console.log('a user is connected');
+    // Check if username is taken or not.
     socket.on('setUsername', function(data){
        if(clients.indexOf(data) > -1) {
            socket.emit('userTaken', data + ' Valitettavasti on jo varattu');
@@ -20,41 +21,32 @@ io.sockets.on('connection', function(socket) {
            io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
        }
     });
-
-    socket.on('join', function(channel, ack) {
-       socket.get('channel', function(err,oldChannel){
-         if(oldChannel) {
-             socket.leave('oldChannel');
-         }
-         socket.set('channel', channel, function() {
-            socket.join(channel);
-            ack();
-         });
-       });
+    // Join to room
+    socket.on('join', function(channel) {
+       socket.join(channel);
+       console.log('user is now on ' + channel);
     });
+    //leave from room
+    socket.on('leave', function(channel){
+       socket.leave(channel);
+       console.log('user is now left from: ' + channel);
+    });
+    //Handling the disconnection from the server
     socket.on('disconnect', function(data){
         var u =  clients.indexOf(data);
         clients.splice(u, 1);
         console.log(' user disconnected');
         io.sockets.emit('broadcast', {description: 'Käyttäjä lähti kanavalta'});
     });
-    socket.on('chat message', function(user, data, ack){
-        socket.get('channel', function(err,channel){
-            if(err) {
-                socket.emit('error',err);
-            }
-            else if(channel) {
-               io.socket.broadcast.to(channel).emit('broadcast', {description: user +": "+ data});
-               ack();
-            } else {
-                socket.emit('error', 'Ei kanavaa valittuna');
-                console.log('Something happened in chat message section.');
-            }
+    //Handles the chat message event.
+    socket.on('chat message', function(user, channel, data){
+        //This currently doesn't work. channel is null
+        console.log('viesti.' + channel + ': ' + data);
+        socket.broadcast.to(channel).emit('broadcast', {description: user +": "+ data});
+
         });
 
-//        console.log('viesti ' + user + " "+ data);
     });
-});
 
 http.listen(3000, function() {
     console.log('listening on *:3000');
