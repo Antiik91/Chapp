@@ -16,6 +16,10 @@
     </head>
     <body>
         <div id="username-taken"></div>
+        <div id="channels" style="visibility: hidden;">
+            <button id="main" type="button" name="main" onclick="joinChannel(document.getElementById('main').name)"> Main ch </button>
+            <button id="offtopic" type="button" name="offtopic" onclick="joinChannel(document.getElementById('offtopic').name)"> offtopic ch </button>
+        </div>
         <div id="newUser">
              <p  style="align-text: center;"> Tervetuloa Tänne :) </p>
              <input id="name" type="text" name="name" value="" placeholder="Saisinko Nickisi">
@@ -30,12 +34,23 @@
         <script src ="/socket.io/socket.io.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
-            var socket = io();
+            var socket = io.connect('http://localhost:3000');
             var user;
+            var currChannel;
             function setUsername(){
                 socket.emit('setUsername', document.getElementById('name').value);
             };
+            function joinChannel(channel){
+                if(currChannel) {
+                    socket.emit('leave', currChannel,function(){
+                    });
+                }
+                socket.emit('join', channel, function(){
+                    appendMessage(user + ' liittyi kanavalle ' + channel);
+                    currChannel = channel;
+                });
 
+            }
             socket.on('userTaken', function(data){
                 document.getElementById('username-taken').innerHTML = data;
             });
@@ -43,15 +58,27 @@
                 user = document.getElementById('name').value;
                 document.getElementById('newUser').style.visibility = 'hidden';
                 document.getElementById('msgs').style.visibility = 'visible';
+                document.getElementById('channels').style.visibility = 'visible';
             });
             $('form').submit(function(){
-                socket.emit('chat message', user, $('#m').val());
+              if (currChannel) {
+                socket.emit('chat message', user, currChannel, $('#m').val());
                 $('#m').val('');
                 return false;
+              } else {
+                socket.emit('chat message', user, 'main', 'Eipä toimi mutta tää toimii');
+              }
+
             });
             socket.on('broadcast', function(data){
-                $('#messages').append($('<li>').text(data.description));
+               appendMessage(data.description);
             });
+            socket.on('error', function(err){
+                appendMessage('error: ' + err);
+            });
+            function appendMessage(msg) {
+                $('#messages').append($('<li>').text(msg));
+            };
         </script>
     </body>
 </html>
