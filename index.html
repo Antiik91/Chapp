@@ -42,12 +42,11 @@
             };
             function joinChannel(channel){
                 if(currChannel) {
-                    socket.emit('leave', curChannel,function(){
-                        console.log('Moikka moi, lähti kanavalta joo.. currcahnnel oli null');
+                    socket.emit('leave', currChannel,function(){
                     });
                 }
                 socket.emit('join', channel, function(){
-                    appendMessage(user + ' liittyi kanavalle');
+                    appendMessage(user + ' liittyi kanavalle ' + channel);
                     currChannel = channel;
                 });
 
@@ -62,9 +61,14 @@
                 document.getElementById('channels').style.visibility = 'visible';
             });
             $('form').submit(function(){
+              if (currChannel) {
                 socket.emit('chat message', user, currChannel, $('#m').val());
                 $('#m').val('');
                 return false;
+              } else {
+                socket.emit('chat message', user, 'main', 'Eipä toimi mutta tää toimii');
+              }
+
             });
             socket.on('broadcast', function(data){
                appendMessage(data.description);

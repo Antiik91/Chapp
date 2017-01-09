@@ -2,51 +2,66 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-app.get('/', function(req, res){
+app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
 var clients = [];
+var channels = [];
 io.sockets.on('connection', function(socket) {
     console.log('a user is connected');
     // Check if username is taken or not.
-    socket.on('setUsername', function(data){
-       if(clients.indexOf(data) > -1) {
-           socket.emit('userTaken', data + ' Valitettavasti on jo varattu');
-//           console.log(data +' varattu');
-       } else {
-           clients.push(data);
-           socket.emit('setUser', {username: data});
-//           console.log(data +' Vapaana');
-           io.sockets.emit('broadcast', {description: data + ' Liittyi kanavalle'});
-       }
+    socket.on('setUsername', function(data) {
+        if (clients.indexOf(data) > -1) {
+            socket.emit('userTaken', data + ' Valitettavasti on jo varattu');
+            //           console.log(data +' varattu');
+        } else {
+            clients.push(data);
+            socket.emit('setUser', {
+                username: data
+            });
+            //           console.log(data +' Vapaana');
+            io.sockets.emit('broadcast', {
+                description: data + ' Liittyi kanavalle'
+            });
+        }
     });
     // Join to room
     socket.on('join', function(channel) {
-       socket.join(channel);
-       console.log('user is now on ' + channel);
+        socket.join(channel);
+        console.log('user is now on ' + channel);
     });
-    //leave from room
-    socket.on('leave', function(channel){
-       socket.leave(channel);
-       console.log('user is now left from: ' + channel);
+    //Leave from room
+    socket.on('leave', function(channel) {
+        socket.leave(channel);
+        console.log('user is now left from: ' + channel);
     });
     //Handling the disconnection from the server
-    socket.on('disconnect', function(data){
-        var u =  clients.indexOf(data);
+    socket.on('disconnect', function(data) {
+        var u = clients.indexOf(data);
         clients.splice(u, 1);
         console.log(' user disconnected');
-        io.sockets.emit('broadcast', {description: 'Käyttäjä lähti kanavalta'});
+        io.sockets.emit('broadcast', {
+            description: 'Käyttäjä lähti kanavalta'
+        });
     });
     //Handles the chat message event.
-    socket.on('chat message', function(user, channel, data){
+    socket.on('chat message', function(user, channel, data) {
         //This currently doesn't work. channel is null
         console.log('viesti.' + channel + ': ' + data);
-        socket.broadcast.to(channel).emit('broadcast', {description: user +": "+ data});
-
-        });
+        if (channel) {
+            console.log(channel + ' Moi');
+            io.to(channel).emit('broadcast', {
+                description: user + ": " + data
+            });
+        } else {
+            console.log('Moikkamoi ' + channel);
+          //  io.sockets.emit('error', 'Something happened :(');
+        }
 
     });
+
+});
 
 http.listen(3000, function() {
     console.log('listening on *:3000');
